@@ -8,15 +8,7 @@ type EditorTab = 'markdown' | 'css';
 
 const App: React.FC = () => {
   const [markdown, setMarkdown] = useState<string>('# Welcome to Fine Doc Assist\n\nStart editing to see the preview!');
-  const [css, setCss] = useState<string>(`/* スタイルを記述してください */
-.markdown-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-.markdown-body h1 {
-  color: #333;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-}`);
+  const [css, setCss] = useState<string>('');
   const [activeTab, setActiveTab] = useState<EditorTab>('markdown');
 
   const handleEditorChange = (value: string) => {

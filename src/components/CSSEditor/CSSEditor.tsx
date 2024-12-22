@@ -34,8 +34,14 @@ export const CSSEditor: React.FC<CSSEditorProps> = ({ value, onChange }) => {
   const generateCSSString = (element: HTMLElement): string => {
     const selector = generateSelector(element);
     const styles = Array.from(element.style)
-      .map(property => `  ${property}: ${element.style.getPropertyValue(property)};`)
+      .map(property => `${property}: ${element.style.getPropertyValue(property)};`)
       .join('\n');
+    
+    // スタイルが空の場合は空のCSSを返す
+    if (!styles.trim()) {
+      return '';
+    }
+    
     return `${selector} {\n${styles}\n}`;
   };
 
@@ -59,7 +65,6 @@ export const CSSEditor: React.FC<CSSEditorProps> = ({ value, onChange }) => {
     <div className="h-full flex">
       <div className="w-3/4 h-full bg-white">
         <div className="p-4 h-full">
-          {/* プレビューエリア */}
           <div
             className="preview-area h-full border rounded p-4 overflow-auto"
             dangerouslySetInnerHTML={{ __html: value }}
