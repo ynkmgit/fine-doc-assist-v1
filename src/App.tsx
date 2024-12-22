@@ -42,7 +42,7 @@ const App: React.FC = () => {
       <SplitView 
         left={
           <Editor
-            key={activeTab} // キーを追加して強制的に再マウント
+            key={activeTab}
             initialValue={getCurrentValue()}
             onChange={handleEditorChange}
             language={activeTab}
