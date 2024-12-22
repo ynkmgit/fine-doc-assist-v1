@@ -1,0 +1,272 @@
+project:
+  name: fine-doc-assist-v1
+  type: frontend-application
+  framework: React + TypeScript
+  buildTool: Vite
+  version: 1.0.0-mvp
+
+strategy:
+  mvp:
+    phase1:  # 最初のリリース
+      - マークダウン編集基本機能
+      - プレビュー表示
+      - 基本的なCSSスタイリングUI
+    phase2:  # 機能拡張
+      - 画像管理システム
+      - マーメイド図表対応
+      - 高度なCSSスタイリング
+    phase3:  # 最適化
+      - パフォーマンス改善
+      - アクセシビリティ対応
+      - 高度な編集機能
+
+structure:
+  root:
+    - src/:
+        components/:
+          Editor/:
+            - Editor.tsx
+            - EditorToolbar.tsx
+            - EditorTypes.ts         # エディタ関連の型定義
+            - styles.css
+          Preview/:
+            - Preview.tsx
+            - PreviewToolbar.tsx
+            - PreviewTypes.ts        # プレビュー関連の型定義
+            - styles.css
+          CSSEditor/:
+            - CSSEditor.tsx
+            - ColorPicker.tsx
+            - PropertyPanel.tsx
+            - CSSEditorTypes.ts      # CSS編集関連の型定義
+            - styles.css
+          ImageManager/:
+            - ImageUploader.tsx
+            - ImageList.tsx
+            - ImagePreview.tsx
+            - ImageTypes.ts          # 画像管理関連の型定義
+            - styles.css
+          Layout/:
+            - MainLayout.tsx
+            - Sidebar.tsx
+            - LayoutTypes.ts         # レイアウト関連の型定義
+            - styles.css
+          shared/:
+            - Button/
+                - Button.tsx
+                - Button.test.tsx
+                - types.ts
+            - Input/
+                - Input.tsx
+                - Input.test.tsx
+                - types.ts
+            - Select/
+                - Select.tsx
+                - Select.test.tsx
+                - types.ts
+            - Modal/
+                - Modal.tsx
+                - Modal.test.tsx
+                - types.ts
+        services/:
+          markdown/:
+            - converter.ts
+            - parser.ts
+            - types.ts
+            - converter.test.ts
+          css/:
+            - generator.ts
+            - validator.ts
+            - types.ts
+            - generator.test.ts
+          image/:
+            - processor.ts
+            - optimizer.ts
+            - types.ts
+            - processor.test.ts
+          mermaid/:
+            - renderer.ts
+            - worker.ts
+            - types.ts
+            - renderer.test.ts
+        hooks/:
+          - useMarkdown/
+              - index.ts
+              - types.ts
+              - useMarkdown.test.ts
+          - useCSS/
+              - index.ts
+              - types.ts
+              - useCSS.test.ts
+          - useImage/
+              - index.ts
+              - types.ts
+              - useImage.test.ts
+          - useMermaid/
+              - index.ts
+              - types.ts
+              - useMermaid.test.ts
+        store/:
+          document/:
+            - index.ts
+            - types.ts
+            - actions.ts
+            - selectors.ts
+            - document.test.ts
+          style/:
+            - index.ts
+            - types.ts
+            - actions.ts
+            - selectors.ts
+            - style.test.ts
+          image/:
+            - index.ts
+            - types.ts
+            - actions.ts
+            - selectors.ts
+            - image.test.ts
+        types/:
+          - common.ts               # 共通型定義
+          - store.ts               # ストア関連の共通型
+          - api.ts                 # API関連の型
+          - events.ts              # イベント関連の型
+        utils/:
+          - converter/
+              - index.ts
+              - types.ts
+              - converter.test.ts
+          - formatter/
+              - index.ts
+              - types.ts
+              - formatter.test.ts
+          - validator/
+              - index.ts
+              - types.ts
+              - validator.test.ts
+        styles/:
+          - global.css
+          - variables.css
+          - themes.css
+        workers/:
+          - mermaid.worker.ts
+        - App.tsx
+        - main.tsx
+        - vite-env.d.ts
+    - tests/:
+        setup/:
+          - jest.setup.ts
+          - testUtils.ts
+        unit/:
+          components/
+          services/
+          hooks/
+          store/
+        integration/:
+          features/:
+            editor/
+              - markdown.test.ts
+              - preview.test.ts
+              - styling.test.ts
+            image/
+              - upload.test.ts
+              - manage.test.ts
+        e2e/:
+          scenarios/:
+            - basicEditing.spec.ts
+            - cssStyleling.spec.ts
+            - imageHandling.spec.ts
+        fixtures/:
+          - markdownSamples/
+          - imageSamples/
+    - .vscode/:
+        - settings.json
+        - extensions.json
+    - .github/:
+        workflows/:
+          - test.yml
+          - build.yml
+    - docs/:
+        - SETUP.md
+        - CONTRIBUTING.md
+        - TESTING.md
+    - scripts/:
+        - setup.ts
+        - test.ts
+        - build.ts
+    - public/:
+        - index.html
+        - assets/
+    - .gitignore
+    - .dockerignore
+    - .eslintrc.js
+    - .prettierrc
+    - docker-compose.yml
+    - Dockerfile
+    - package.json
+    - tsconfig.json
+    - vite.config.ts
+    - README.md
+
+testing:
+  strategy:
+    unit:
+      framework: Jest
+      coverage:
+        statements: 85
+        branches: 80
+        functions: 85
+        lines: 85
+      patterns:
+        - "**/*.test.ts"
+        - "**/*.test.tsx"
+    integration:
+      framework: Jest + Testing Library
+      patterns:
+        - "**/*.integration.test.ts"
+    e2e:
+      framework: Playwright
+      patterns:
+        - "**/*.spec.ts"
+  priorities:
+    critical:
+      - マークダウン変換
+      - プレビュー表示
+      - CSSスタイリング基本機能
+    high:
+      - 画像アップロード
+      - マーメイド図表
+    medium:
+      - 高度なスタイリング
+      - パフォーマンス最適化
+
+dependencies:
+  core:
+    - react: ^18.2.0
+    - typescript: ^5.0.0
+    - vite: ^5.0.0
+  state:
+    - zustand: ^4.0.0
+  editor:
+    - monaco-editor: ^0.45.0
+    - marked: ^9.0.0
+    - mermaid: ^10.6.0
+  ui:
+    - @radix-ui/react: ^1.0.0
+  utils:
+    - lodash-es: ^4.0.0
+  testing:
+    - jest: ^29.0.0
+    - "@testing-library/react": ^14.0.0
+    - "@testing-library/jest-dom": ^6.0.0
+    - playwright: ^1.0.0
+
+development:
+  environment:
+    node: ">=20.0.0"
+  scripts:
+    dev: "vite"
+    build: "tsc && vite build"
+    test: "jest"
+    "test:e2e": "playwright test"
+    lint: "eslint ."
+    format: "prettier --write ."
