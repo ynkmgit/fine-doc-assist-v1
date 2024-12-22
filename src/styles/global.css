@@ -1,70 +1,79 @@
-/* Reset CSS */
-*, *::before, *::after {
+/* Base styles */
+* {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 16px;
-  line-height: 1.5;
-  color: #333;
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
-/* スクロールバーのカスタマイズ */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Layout styles */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+/* Editor tabs */
+.editor-tabs {
+  display: flex;
+  padding: 0;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+.tab-button {
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+  border-right: 1px solid #ddd;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+.tab-button:hover {
+  background-color: #e8e8e8;
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
-    color: #e0e0e0;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #1e1e1e;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #666;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #888;
-  }
+.tab-button.active {
+  background-color: #fff;
+  border-bottom: 2px solid #0066cc;
+  font-weight: 500;
 }
 
-/* アクセシビリティ対応 */
-:focus {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
+/* Split view styles */
+.split-view {
+  display: flex;
+  flex: 1;
+  min-height: 0;  /* Important for flex child scrolling */
 }
 
-/* キーボードユーザー向けのフォーカス表示 */
-:focus:not(:focus-visible) {
-  outline: none;
+.split-view-panel {
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
-:focus-visible {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
+.split-view-divider {
+  width: 4px;
+  background-color: #ddd;
+  cursor: col-resize;
+}
+
+/* Preview styles */
+.preview-wrapper {
+  height: 100%;
+  background-color: white;
+  overflow: auto;
+}
+
+.preview-container {
+  padding: 20px;
 }

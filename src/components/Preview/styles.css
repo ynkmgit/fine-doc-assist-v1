@@ -2,27 +2,49 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #ffffff;
+}
+
+.preview-toolbar {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  background: #f5f5f5;
 }
 
 .preview-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #ffffff;
 }
 
-.preview-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
+/* CSSエディタ用のインタラクション */
+.preview-content * {
+  position: relative;
+  cursor: pointer;
 }
 
+.preview-content *:hover {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.preview-content *:hover::after {
+  content: 'クリックしてスタイルを編集';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+/* プレビュー用の基本スタイル */
 .markdown-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   color: #333;
 }
@@ -39,190 +61,13 @@
   line-height: 1.25;
 }
 
-.markdown-body h1 { font-size: 2em; border-bottom: 1px solid #eaecef; }
-.markdown-body h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; }
-.markdown-body h3 { font-size: 1.25em; }
-.markdown-body h4 { font-size: 1em; }
-.markdown-body h5 { font-size: 0.875em; }
-.markdown-body h6 { font-size: 0.85em; color: #6a737d; }
-
 .markdown-body p {
-  margin-top: 0;
   margin-bottom: 16px;
 }
 
 .markdown-body code {
   padding: 0.2em 0.4em;
-  margin: 0;
-  font-size: 85%;
-  background-color: rgba(27,31,35,0.05);
+  background-color: rgba(27, 31, 35, 0.05);
   border-radius: 3px;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-}
-
-.markdown-body pre {
-  padding: 16px;
-  overflow: auto;
-  font-size: 85%;
-  line-height: 1.45;
-  background-color: #f6f8fa;
-  border-radius: 3px;
-}
-
-.markdown-body pre code {
-  padding: 0;
-  margin: 0;
-  font-size: 100%;
-  word-break: normal;
-  white-space: pre;
-  background: transparent;
-  border: 0;
-}
-
-.markdown-body blockquote {
-  padding: 0 1em;
-  color: #6a737d;
-  border-left: 0.25em solid #dfe2e5;
-  margin: 0 0 16px 0;
-}
-
-.markdown-body ul,
-.markdown-body ol {
-  padding-left: 2em;
-  margin-bottom: 16px;
-}
-
-.markdown-body table {
-  display: block;
-  width: 100%;
-  overflow: auto;
-  margin-bottom: 16px;
-  border-spacing: 0;
-  border-collapse: collapse;
-}
-
-.markdown-body table th,
-.markdown-body table td {
-  padding: 6px 13px;
-  border: 1px solid #dfe2e5;
-}
-
-.markdown-body table tr {
-  background-color: #fff;
-  border-top: 1px solid #c6cbd1;
-}
-
-.markdown-body table tr:nth-child(2n) {
-  background-color: #f6f8fa;
-}
-
-.toolbar-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #ffffff;
-  color: #333333;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toolbar-button:hover:not(:disabled) {
-  background-color: #f0f0f0;
-  border-color: #999;
-}
-
-.toolbar-button:active:not(:disabled) {
-  background-color: #e0e0e0;
-}
-
-.toolbar-button.active {
-  background-color: #e3f2fd;
-  border-color: #2196f3;
-  color: #1976d2;
-}
-
-.toolbar-group {
-  display: flex;
-  gap: 8px;
-}
-
-.toolbar-icon {
-  font-size: 16px;
-}
-
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  .preview-wrapper {
-    background-color: #1e1e1e;
-  }
-
-  .preview-content {
-    background-color: #1e1e1e;
-  }
-
-  .preview-toolbar {
-    background-color: #2d2d2d;
-    border-bottom-color: #404040;
-  }
-
-  .markdown-body {
-    color: #e0e0e0;
-  }
-
-  .markdown-body h1,
-  .markdown-body h2 {
-    border-bottom-color: #404040;
-  }
-
-  .markdown-body code {
-    background-color: rgba(255,255,255,0.1);
-  }
-
-  .markdown-body pre {
-    background-color: #2d2d2d;
-  }
-
-  .markdown-body blockquote {
-    color: #a0a0a0;
-    border-left-color: #404040;
-  }
-
-  .markdown-body table th,
-  .markdown-body table td {
-    border-color: #404040;
-  }
-
-  .markdown-body table tr {
-    background-color: #1e1e1e;
-    border-top-color: #404040;
-  }
-
-  .markdown-body table tr:nth-child(2n) {
-    background-color: #2d2d2d;
-  }
-
-  .toolbar-button {
-    background-color: #3d3d3d;
-    border-color: #505050;
-    color: #ffffff;
-  }
-
-  .toolbar-button:hover:not(:disabled) {
-    background-color: #4d4d4d;
-    border-color: #606060;
-  }
-
-  .toolbar-button:active:not(:disabled) {
-    background-color: #5d5d5d;
-  }
-
-  .toolbar-button.active {
-    background-color: #1a3f5f;
-    border-color: #2196f3;
-    color: #90caf9;
-  }
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }

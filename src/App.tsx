@@ -1,42 +1,66 @@
 import React, { useState } from 'react';
-import MainLayout from './components/Layout/MainLayout';
-import SplitView from './components/Layout/SplitView';
 import Editor from './components/Editor/Editor';
 import Preview from './components/Preview/Preview';
+import SplitView from './components/Layout/SplitView';
 import './styles/global.css';
+
+type EditorTab = 'markdown' | 'css';
 
 const App: React.FC = () => {
   const [markdown, setMarkdown] = useState<string>('# Welcome to Fine Doc Assist\n\nStart editing to see the preview!');
+  const [css, setCss] = useState<string>(`/* スタイルを記述してください */
+.markdown-body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.markdown-body h1 {
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.3em;
+}`);
+  const [activeTab, setActiveTab] = useState<EditorTab>('markdown');
 
   const handleEditorChange = (value: string) => {
-    setMarkdown(value);
-  };
-
-  const handleElementSelect = (element: HTMLElement) => {
-    // プレビュー要素選択時の処理
-    console.log('Selected element:', element);
+    if (activeTab === 'markdown') {
+      setMarkdown(value);
+    } else {
+      setCss(value);
+    }
   };
 
   return (
-    <MainLayout>
-      <SplitView
+    <div className="app-layout">
+      <div className="editor-tabs">
+        <button
+          className={`tab-button ${activeTab === 'markdown' ? 'active' : ''}`}
+          onClick={() => setActiveTab('markdown')}
+        >
+          Markdown
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'css' ? 'active' : ''}`}
+          onClick={() => setActiveTab('css')}
+        >
+          CSS
+        </button>
+      </div>
+      <SplitView 
         left={
           <Editor
-            initialValue={markdown}
+            initialValue={activeTab === 'markdown' ? markdown : css}
             onChange={handleEditorChange}
-            language="markdown"
+            language={activeTab}
           />
         }
         right={
           <Preview
             markdown={markdown}
-            onElementSelect={handleElementSelect}
+            customStyles={css}
           />
         }
         defaultSplit={50}
         minSize={300}
       />
-    </MainLayout>
+    </div>
   );
 };
 

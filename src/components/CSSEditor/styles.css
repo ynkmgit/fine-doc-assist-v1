@@ -1,0 +1,55 @@
+.css-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #f5f5f5;
+  border-left: 1px solid #ddd;
+}
+
+.css-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.css-editor-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.mode-toggle {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.mode-toggle:hover {
+  background: #f0f0f0;
+}
+
+.mode-toggle.active {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+}
+
+.raw-css-editor {
+  flex: 1;
+  min-height: 200px;
+  border-top: 1px solid #ddd;
+}
+
+.property-panel {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* その他の既存のスタイル */
