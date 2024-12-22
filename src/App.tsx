@@ -1,12 +1,29 @@
-import React from 'react'
-import './styles/App.css'
+import React from 'react';
+import MainLayout from './components/Layout/MainLayout';
+import SplitView from './components/Layout/SplitView';
+import './styles/global.css';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="app">
-      <h1>Fine Doc Assist</h1>
-    </div>
-  )
-}
+    <MainLayout>
+      <SplitView
+        left={
+          <div className="editor-container">
+            {/* ここにエディターコンポーネントが入ります */}
+            <div style={{ padding: '20px' }}>Editor</div>
+          </div>
+        }
+        right={
+          <div className="preview-container">
+            {/* ここにプレビューコンポーネントが入ります */}
+            <div style={{ padding: '20px' }}>Preview</div>
+          </div>
+        }
+        defaultSplit={50}
+        minSize={300}
+      />
+    </MainLayout>
+  );
+};
 
-export default App
+export default App;
