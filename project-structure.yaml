@@ -186,9 +186,16 @@ structure:
           - test.yml
           - build.yml
     - docs/:
-        - SETUP.md
-        - CONTRIBUTING.md
-        - TESTING.md
+        - MVP_PLAN.md: "MVP実装計画書"
+        - SETUP.md: "セットアップガイド"
+        - CONTRIBUTING.md: "コントリビューションガイド"
+        - TESTING.md: "テスト方針・手順書"
+        - REQUIREMENTS.md: "機能要件定義書"
+        requirements/:
+          - editor.md: "エディタ要件"
+          - preview.md: "プレビュー要件"
+          - style.md: "スタイル要件"
+          - performance.md: "パフォーマンス要件"
     - scripts/:
         - setup.ts
         - test.ts
