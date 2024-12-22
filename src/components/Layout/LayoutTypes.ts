@@ -1,21 +1,10 @@
-export type LayoutProps = {
-  children?: React.ReactNode;
-  sidebarOpen?: boolean;
-  onSidebarToggle?: () => void;
-};
+export type Tab = 'markdown' | 'html' | 'css' | 'images';
 
-export type SidebarProps = {
-  isOpen: boolean;
-  onToggle: () => void;
-  items?: Array<{
-    id: string;
-    label: string;
-    icon?: string;
-    onClick: () => void;
-  }>;
-};
+export interface TabSelectorProps {
+  activeTab: Tab;
+  onTabChange: (tab: Tab) => void;
+}
 
-export type MainContentProps = {
-  children: React.ReactNode;
-  isSidebarOpen: boolean;
-};
+export interface MainLayoutProps {
+  // 将来的な拡張のために空のインターフェースを用意
+}

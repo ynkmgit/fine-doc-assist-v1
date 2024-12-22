@@ -1,105 +1,94 @@
 import React, { useState } from 'react';
-import * as monaco from 'monaco-editor';
-import PropertyPanel from './PropertyPanel';
-import ColorPicker from './ColorPicker';
-import { CSSEditorProps } from './CSSEditorTypes';
-import './styles.css';
+import { PropertyPanel } from './PropertyPanel';
+import { ColorPicker } from './ColorPicker';
+import { CSSEditorProps, StyleProperty } from './CSSEditorTypes';
 
-const CSSEditor: React.FC<CSSEditorProps> = ({
-  selectedElement,
-  onStyleChange
-}) => {
-  const [activeProperty, setActiveProperty] = useState<string | null>(null);
-  const [currentStyles, setCurrentStyles] = useState<Record<string, string>>({});
-  const [isRawMode, setIsRawMode] = useState(false);
+export const CSSEditor: React.FC<CSSEditorProps> = ({ value, onChange }) => {
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const [cssProperties, setCssProperties] = useState<StyleProperty[]>([]);
 
-  // スタイル変更時のハンドラー
-  const handleStyleChange = (property: string, value: string) => {
-    const newStyles = {
-      ...currentStyles,
-      [property]: value
-    };
-    setCurrentStyles(newStyles);
-    onStyleChange?.(newStyles);
-  };
-
-  // カラーピッカーの値変更時のハンドラー
-  const handleColorChange = (color: string) => {
-    if (activeProperty) {
-      handleStyleChange(activeProperty, color);
-    }
-  };
-
-  const handleRawCSSChange = (value: string) => {
-    try {
-      // CSSテキストをオブジェクトに変換
-      const styleLines = value.split(';').filter(line => line.trim());
-      const newStyles: Record<string, string> = {};
-      
-      styleLines.forEach(line => {
-        const [property, value] = line.split(':').map(s => s.trim());
-        if (property && value) {
-          newStyles[property] = value;
-        }
+  const handleElementSelect = (element: HTMLElement) => {
+    setSelectedElement(element);
+    // 選択された要素の現在のスタイルを取得
+    const computedStyle = window.getComputedStyle(element);
+    const properties: StyleProperty[] = [];
+    for (let i = 0; i < computedStyle.length; i++) {
+      const property = computedStyle[i];
+      properties.push({
+        name: property,
+        value: computedStyle.getPropertyValue(property)
       });
+    }
+    setCssProperties(properties);
+  };
 
-      setCurrentStyles(newStyles);
-      onStyleChange?.(newStyles);
-    } catch (error) {
-      console.error('CSS parse error:', error);
+  const handleStyleChange = (property: string, value: string) => {
+    if (selectedElement) {
+      selectedElement.style.setProperty(property, value);
+      // CSSの文字列を更新
+      const updatedCSS = generateCSSString(selectedElement);
+      onChange(updatedCSS);
     }
   };
 
-  const getCurrentCSSText = () => {
-    return Object.entries(currentStyles)
-      .map(([property, value]) => `${property}: ${value};`)
+  const generateCSSString = (element: HTMLElement): string => {
+    const selector = generateSelector(element);
+    const styles = Array.from(element.style)
+      .map(property => `  ${property}: ${element.style.getPropertyValue(property)};`)
       .join('\n');
+    return `${selector} {\n${styles}\n}`;
+  };
+
+  const generateSelector = (element: HTMLElement): string => {
+    if (element.id) {
+      return `#${element.id}`;
+    }
+    if (element.className) {
+      return `.${element.className.split(' ')[0]}`;
+    }
+    let selector = element.tagName.toLowerCase();
+    let parent = element.parentElement;
+    while (parent && parent !== document.body) {
+      selector = `${parent.tagName.toLowerCase()} > ${selector}`;
+      parent = parent.parentElement;
+    }
+    return selector;
   };
 
   return (
-    <div className="css-editor-container">
-      <div className="css-editor-header">
-        <h3>Style Editor</h3>
-        <button 
-          className={`mode-toggle ${isRawMode ? 'active' : ''}`}
-          onClick={() => setIsRawMode(!isRawMode)}
-        >
-          {isRawMode ? 'Visual Mode' : 'Raw CSS'}
-        </button>
-      </div>
-      {isRawMode ? (
-        <div className="raw-css-editor">
-          <Editor
-            height="200px"
-            defaultLanguage="css"
-            value={getCurrentCSSText()}
-            onChange={handleRawCSSChange}
-            options={{
-              minimap: { enabled: false },
-              lineNumbers: 'off',
-              scrollBeyondLastLine: false,
-              wordWrap: 'on'
+    <div className="h-full flex">
+      <div className="w-3/4 h-full bg-white">
+        <div className="p-4 h-full">
+          {/* プレビューエリア */}
+          <div
+            className="preview-area h-full border rounded p-4 overflow-auto"
+            dangerouslySetInnerHTML={{ __html: value }}
+            onClick={(e) => {
+              const target = e.target as HTMLElement;
+              if (target !== e.currentTarget) {
+                handleElementSelect(target);
+              }
             }}
           />
         </div>
-      ) : (
-        <>
-          <PropertyPanel
-            selectedElement={selectedElement}
-            currentStyles={currentStyles}
-            onPropertyChange={handleStyleChange}
-            onPropertySelect={setActiveProperty}
-          />
-          {activeProperty && activeProperty.includes('color') && (
-            <ColorPicker
-              color={currentStyles[activeProperty] || '#000000'}
-              onChange={handleColorChange}
+      </div>
+      <div className="w-1/4 h-full border-l">
+        {selectedElement ? (
+          <>
+            <PropertyPanel
+              properties={cssProperties}
+              onChange={handleStyleChange}
             />
-          )}
-        </>
-      )}
+            <ColorPicker
+              onChange={(color) => handleStyleChange('color', color)}
+            />
+          </>
+        ) : (
+          <div className="p-4 text-gray-500">
+            編集したい要素をクリックしてください
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
-export default CSSEditor;

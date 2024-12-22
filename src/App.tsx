@@ -27,6 +27,10 @@ const App: React.FC = () => {
     }
   };
 
+  const getCurrentValue = () => {
+    return activeTab === 'markdown' ? markdown : css;
+  };
+
   return (
     <div className="app-layout">
       <div className="editor-tabs">
@@ -46,7 +50,8 @@ const App: React.FC = () => {
       <SplitView 
         left={
           <Editor
-            initialValue={activeTab === 'markdown' ? markdown : css}
+            key={activeTab} // キーを追加して強制的に再マウント
+            initialValue={getCurrentValue()}
             onChange={handleEditorChange}
             language={activeTab}
           />

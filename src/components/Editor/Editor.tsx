@@ -17,6 +17,7 @@ const Editor: React.FC<EditorProps> = ({
   const [isDirty, setIsDirty] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   
+  // エディタの初期化
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -61,7 +62,27 @@ const Editor: React.FC<EditorProps> = ({
     return () => {
       editor.dispose();
     };
-  }, []);
+  }, []); // 一度だけ初期化
+
+  // 言語が変更されたときの処理
+  useEffect(() => {
+    if (editorInstance.editor) {
+      const model = editorInstance.editor.getModel();
+      if (model) {
+        monaco.editor.setModelLanguage(model, language);
+      }
+    }
+  }, [language]);
+
+  // 初期値が変更されたときの処理
+  useEffect(() => {
+    if (editorInstance.editor) {
+      const currentValue = editorInstance.editor.getValue();
+      if (currentValue !== initialValue) {
+        editorInstance.editor.setValue(initialValue);
+      }
+    }
+  }, [initialValue]);
 
   // テーマの変更を監視
   useEffect(() => {
