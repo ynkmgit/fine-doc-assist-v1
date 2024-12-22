@@ -1,0 +1,4 @@
+.tab-selector {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+}
