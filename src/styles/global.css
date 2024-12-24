@@ -74,8 +74,30 @@ html, body {
   overflow: auto;
 }
 
+/* プレビュー内の要素ホバー効果 */
 .preview-container {
   padding: 20px;
+}
+
+.preview-container *:not(pre):hover {
+  outline: 2px solid rgba(0, 102, 255, 0.5);
+  outline-offset: 2px;
+  transition: outline 0.2s ease;
+  position: relative;
+}
+
+.preview-container *:not(pre):hover::after {
+  content: attr(class);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: rgba(0, 102, 255, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 1000;
 }
 
 /* Code block styles */
