@@ -1,30 +1,19 @@
-import { editor } from 'monaco-editor';
+import * as monaco from 'monaco-editor';
 
 export interface EditorProps {
   initialValue?: string;
   onChange?: (value: string) => void;
   language?: string;
-  theme?: 'vs' | 'vs-dark' | 'hc-black';
-}
-
-export interface EditorToolbarProps {
-  onSave?: () => void;
-  onUndo?: () => void;
-  onRedo?: () => void;
-  isDirty?: boolean;
-}
-
-export interface EditorConfig {
-  fontSize: number;
-  lineNumbers: 'on' | 'off';
-  wordWrap: 'on' | 'off';
-  minimap: {
-    enabled: boolean;
-  };
-  theme: 'vs' | 'vs-dark' | 'hc-black';
+  theme?: string;
+  onCSSReceive?: (cssData: {selector: string; styles: string}) => void;
 }
 
 export interface MonacoEditorInstance {
-  editor: editor.IStandaloneCodeEditor | null;
+  editor: monaco.editor.IStandaloneCodeEditor | null;
   container: HTMLDivElement | null;
+}
+
+export interface CSSData {
+  selector: string;
+  styles: string;
 }

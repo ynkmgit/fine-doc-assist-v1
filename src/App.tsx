@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Editor from './components/Editor/Editor';
 import Preview from './components/Preview/Preview';
 import SplitView from './components/Layout/SplitView';
 import { useMarkdown } from './hooks/useMarkdown';
+import { CSSData } from './components/Editor/EditorTypes';
 import './styles/global.css';
 
 type EditorTab = 'markdown' | 'css' | 'html';
@@ -13,6 +14,7 @@ const App: React.FC = () => {
   const { markdown, html, updateMarkdown, updateHtml } = useMarkdown(initialMarkdown);
   const [css, setCss] = useState<string>('');
   const [activeTab, setActiveTab] = useState<EditorTab>('markdown');
+  const appendCSSRef = useRef<(data: CSSData) => void>();
 
   const handleEditorChange = (value: string) => {
     switch (activeTab) {
@@ -40,6 +42,20 @@ const App: React.FC = () => {
         return markdown;
     }
   };
+
+  // CSSエディタへの反映関数
+  const handleCSSReceive = useCallback((appendCSS: (data: CSSData) => void) => {
+    appendCSSRef.current = appendCSS;
+  }, []);
+
+  // プレビューからのスタイル適用要求を処理
+  const handleApplyToCSSEditor = useCallback((cssData: CSSData) => {
+    if (appendCSSRef.current) {
+      appendCSSRef.current(cssData);
+      // CSSタブに切り替え
+      setActiveTab('css');
+    }
+  }, []);
 
   return (
     <div className="app-layout">
@@ -70,12 +86,14 @@ const App: React.FC = () => {
             initialValue={getCurrentValue()}
             onChange={handleEditorChange}
             language={activeTab}
+            onCSSReceive={activeTab === 'css' ? handleCSSReceive : undefined}
           />
         }
         right={
           <Preview
-            markdown={markdown}  // 常にマークダウンを表示
+            markdown={markdown}
             customStyles={css}
+            onApplyToCSSEditor={handleApplyToCSSEditor}
           />
         }
         defaultSplit={50}

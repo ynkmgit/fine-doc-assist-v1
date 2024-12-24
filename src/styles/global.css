@@ -52,7 +52,7 @@ html, body {
 .split-view {
   display: flex;
   flex: 1;
-  min-height: 0;  /* Important for flex child scrolling */
+  min-height: 0;
 }
 
 .split-view-panel {
@@ -82,10 +82,11 @@ html, body {
 .preview-container *:not(pre):hover {
   outline: 2px solid rgba(0, 102, 255, 0.5);
   outline-offset: 2px;
-  transition: outline 0.2s ease;
+  cursor: pointer;
   position: relative;
 }
 
+/* ホバー時のツールチップ */
 .preview-container *:not(pre):hover::after {
   content: attr(class);
   position: absolute;
@@ -98,6 +99,12 @@ html, body {
   font-size: 12px;
   pointer-events: none;
   z-index: 1000;
+}
+
+/* 選択中の要素のハイライト */
+.preview-container *:not(pre).style-selecting {
+  outline: 2px solid rgba(255, 165, 0, 0.8) !important;
+  outline-offset: 2px;
 }
 
 /* Code block styles */

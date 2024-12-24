@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { marked } from 'marked';
 import PreviewToolbar from './PreviewToolbar';
-import { PreviewProps } from './PreviewTypes';
+import StyleSelectorPanel from './StyleSelectorPanel';
+import { PreviewProps, ElementStyle, CSSData } from './PreviewTypes';
 import { initializeMermaid, renderMermaid } from '../../services/mermaid/renderer';
 import './styles.css';
 import './Preview.css';
@@ -16,33 +17,81 @@ marked.setOptions({
 
 const Preview: React.FC<PreviewProps> = ({
   markdown,
-  customStyles
+  customStyles,
+  onStyleSelect,
+  onApplyToCSSEditor
 }) => {
   const previewRef = useRef<HTMLDivElement>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   const [processedMarkdown, setProcessedMarkdown] = useState(markdown);
   const [renderedHTML, setRenderedHTML] = useState('');
-  
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const [isStylePanelOpen, setIsStylePanelOpen] = useState(false);
+  const [hoveredElement, setHoveredElement] = useState<HTMLElement | null>(null);
+
   useEffect(() => {
     initializeMermaid();
   }, []);
+
+  // マウスホバーとクリックのイベントハンドラ
+  useEffect(() => {
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.matches('pre, pre *')) { // コードブロックは除外
+        setHoveredElement(target);
+        e.stopPropagation();
+      }
+    };
+
+    const handleMouseOut = () => {
+      setHoveredElement(null);
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      if (hoveredElement) {
+        e.preventDefault();
+        setSelectedElement(hoveredElement);
+        setIsStylePanelOpen(true);
+        e.stopPropagation();
+      }
+    };
+
+    const previewContainer = previewRef.current?.querySelector('.preview-content');
+    if (previewContainer) {
+      previewContainer.addEventListener('mouseover', handleMouseOver);
+      previewContainer.addEventListener('mouseout', handleMouseOut);
+      previewContainer.addEventListener('click', handleClick);
+    }
+
+    return () => {
+      if (previewContainer) {
+        previewContainer.removeEventListener('mouseover', handleMouseOver);
+        previewContainer.removeEventListener('mouseout', handleMouseOut);
+        previewContainer.removeEventListener('click', handleClick);
+      }
+    };
+  }, [hoveredElement]);
+
+  // CSSエディタへの適用
+  const handleApplyToCSSEditor = (cssData: CSSData) => {
+    if (onApplyToCSSEditor) {
+      onApplyToCSSEditor(cssData);
+    }
+  };
 
   // スタイルの適用を管理
   useEffect(() => {
     if (!previewRef.current) return;
 
-    // 既存のスタイル要素を削除
     if (styleRef.current) {
       styleRef.current.remove();
       styleRef.current = null;
     }
 
     if (customStyles) {
-      // スコープ付きのスタイルを作成
       const scopedStyles = customStyles.replace(
         /([^{]*){([^}]*)}/g,
         (match, selector, rules) => {
-          // セレクタをプレビュー内に限定
           const scopedSelector = selector
             .split(',')
             .map(s => `.preview-scope ${s.trim()}`)
@@ -51,14 +100,12 @@ const Preview: React.FC<PreviewProps> = ({
         }
       );
 
-      // 新しいスタイル要素を作成
       const styleElement = document.createElement('style');
       styleElement.textContent = scopedStyles;
       styleRef.current = styleElement;
       previewRef.current.appendChild(styleElement);
     }
 
-    // コンポーネントのクリーンアップ時にスタイルを削除
     return () => {
       if (styleRef.current) {
         styleRef.current.remove();
@@ -106,6 +153,27 @@ const Preview: React.FC<PreviewProps> = ({
     }
   }, [processedMarkdown]);
 
+  // 選択された要素のスタイル情報を取得
+  const getElementStyle = (element: HTMLElement): ElementStyle => {
+    const computedStyle = window.getComputedStyle(element);
+    return {
+      tagName: element.tagName.toLowerCase(),
+      className: element.className,
+      id: element.id,
+      styles: {
+        color: computedStyle.color,
+        backgroundColor: computedStyle.backgroundColor,
+        fontSize: computedStyle.fontSize,
+        fontWeight: computedStyle.fontWeight,
+        margin: computedStyle.margin,
+        padding: computedStyle.padding,
+        border: computedStyle.border,
+        borderRadius: computedStyle.borderRadius,
+        textAlign: computedStyle.textAlign as 'left' | 'center' | 'right' | 'justify',
+      }
+    };
+  };
+
   return (
     <div className="preview-wrapper">
       <PreviewToolbar 
@@ -118,6 +186,21 @@ const Preview: React.FC<PreviewProps> = ({
       >
         <div className="preview-content markdown-body" />
       </div>
+      {isStylePanelOpen && selectedElement && (
+        <StyleSelectorPanel
+          elementStyle={getElementStyle(selectedElement)}
+          onStyleChange={(style) => {
+            if (onStyleSelect) {
+              onStyleSelect(style);
+            }
+          }}
+          onClose={() => {
+            setIsStylePanelOpen(false);
+            setSelectedElement(null);
+          }}
+          onApplyToCSSEditor={handleApplyToCSSEditor}
+        />
+      )}
     </div>
   );
 };

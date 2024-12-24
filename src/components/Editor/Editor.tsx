@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as monaco from 'monaco-editor';
 import EditorToolbar from './EditorToolbar';
-import { EditorProps, MonacoEditorInstance } from './EditorTypes';
+import { EditorProps, MonacoEditorInstance, CSSData } from './EditorTypes';
 import './styles.css';
 
 // カスタムダークテーマの定義
@@ -36,7 +36,8 @@ const Editor: React.FC<EditorProps> = ({
   initialValue = '',
   onChange,
   language = 'markdown',
-  theme = 'customDark' // デフォルトでカスタムダークテーマを使用
+  theme = 'customDark',
+  onCSSReceive
 }) => {
   const [editorInstance, setEditorInstance] = useState<MonacoEditorInstance>({
     editor: null,
@@ -45,6 +46,46 @@ const Editor: React.FC<EditorProps> = ({
   const [isDirty, setIsDirty] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   
+  // CSS適用のための新しい関数
+  const appendCSSToEditor = ({ selector, styles }: CSSData) => {
+    if (!editorInstance.editor) return;
+
+    const currentValue = editorInstance.editor.getValue();
+    const cssRule = `${selector} {\n${styles}\n}\n`;
+
+    // CSSルールが既に存在するか確認
+    const selectorRegex = new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*{[^}]*}`, 'g');
+    const existingRule = currentValue.match(selectorRegex);
+
+    if (existingRule) {
+      // 既存のルールを更新
+      const newValue = currentValue.replace(selectorRegex, cssRule.trim());
+      editorInstance.editor.setValue(newValue);
+    } else {
+      // 新しいルールを追加
+      const position = editorInstance.editor.getModel()?.getLineCount() || 0;
+      const newValue = currentValue ? `${currentValue}\n\n${cssRule}` : cssRule;
+      editorInstance.editor.setValue(newValue);
+    }
+
+    // カーソルを適切な位置に移動
+    const lineCount = editorInstance.editor.getModel()?.getLineCount() || 0;
+    editorInstance.editor.setPosition({
+      lineNumber: lineCount,
+      column: 1
+    });
+
+    // フォーマット
+    editorInstance.editor.getAction('editor.action.formatDocument')?.run();
+  };
+
+  // onCSSReceiveの監視を追加
+  useEffect(() => {
+    if (onCSSReceive && language === 'css') {
+      onCSSReceive(appendCSSToEditor);
+    }
+  }, [onCSSReceive, language, editorInstance.editor]);
+
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -102,7 +143,7 @@ const Editor: React.FC<EditorProps> = ({
     };
   }, []);
 
-  // 他のuseEffectは変更なし
+  // 既存のuseEffect
   useEffect(() => {
     if (editorInstance.editor) {
       const model = editorInstance.editor.getModel();
