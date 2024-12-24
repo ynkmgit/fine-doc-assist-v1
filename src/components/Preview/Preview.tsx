@@ -21,6 +21,7 @@ const Preview: React.FC<PreviewProps> = ({
   const previewRef = useRef<HTMLDivElement>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   const [processedMarkdown, setProcessedMarkdown] = useState(markdown);
+  const [renderedHTML, setRenderedHTML] = useState('');
   
   useEffect(() => {
     initializeMermaid();
@@ -101,12 +102,16 @@ const Preview: React.FC<PreviewProps> = ({
       if (contentDiv) {
         contentDiv.innerHTML = html;
       }
+      setRenderedHTML(html);
     }
   }, [processedMarkdown]);
 
   return (
     <div className="preview-wrapper">
-      <PreviewToolbar />
+      <PreviewToolbar 
+        markdown={renderedHTML}
+        customStyles={customStyles}
+      />
       <div 
         className="preview-container preview-scope"
         ref={previewRef}

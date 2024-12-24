@@ -3,6 +3,11 @@ export interface PreviewProps {
   customStyles?: string;
 }
 
+export interface PreviewToolbarProps {
+  markdown: string;
+  customStyles?: string;
+}
+
 export interface MermaidRenderProps {
   code: string;
   theme?: string;
