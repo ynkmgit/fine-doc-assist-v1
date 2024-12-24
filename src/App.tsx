@@ -2,26 +2,27 @@ import React, { useState } from 'react';
 import Editor from './components/Editor/Editor';
 import Preview from './components/Preview/Preview';
 import SplitView from './components/Layout/SplitView';
+import { useMarkdown } from './hooks/useMarkdown';
 import './styles/global.css';
 
 type EditorTab = 'markdown' | 'css' | 'html';
 
 const App: React.FC = () => {
-  const [markdown, setMarkdown] = useState<string>('# Welcome to Fine Doc Assist\n\nStart editing to see the preview!');
+  const { markdown, html, updateMarkdown } = useMarkdown('# Welcome to Fine Doc Assist\n\nStart editing to see the preview!');
   const [css, setCss] = useState<string>('');
-  const [html, setHtml] = useState<string>('');
   const [activeTab, setActiveTab] = useState<EditorTab>('markdown');
 
   const handleEditorChange = (value: string) => {
     switch (activeTab) {
       case 'markdown':
-        setMarkdown(value);
+        updateMarkdown(value);
         break;
       case 'css':
         setCss(value);
         break;
       case 'html':
-        setHtml(value);
+        // Note: HTMLタブでの編集は直接プレビューに反映されません
+        // HTMLはマークダウンから生成される出力として表示されます
         break;
     }
   };
@@ -72,7 +73,7 @@ const App: React.FC = () => {
         }
         right={
           <Preview
-            markdown={markdown}
+            markdown={activeTab === 'html' ? html : markdown}
             customStyles={css}
           />
         }
