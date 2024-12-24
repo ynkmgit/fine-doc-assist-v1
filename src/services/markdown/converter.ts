@@ -3,36 +3,100 @@ import DOMPurify from 'dompurify';
 import TurndownService from 'turndown';
 
 /**
+ * マークダウンの拡張記法を処理するユーティリティ関数
+ */
+const processExtendedSyntax = (text: string) => {
+  let content = text;
+  let id = '';
+  let classes: string[] = [];
+  let otherAttrs: Record<string, string> = {};
+
+  // 行末または強調テキスト後の属性指定を検出
+  const attrMatch = content.match(/\s*\{([^}]+)\}\s*$/);
+  if (attrMatch) {
+    const attrStr = attrMatch[1];
+    content = content.replace(attrMatch[0], '');
+
+    // id属性の処理
+    const idMatch = attrStr.match(/#([^\s}]+)/);
+    if (idMatch) {
+      id = idMatch[1];
+    }
+
+    // class属性の処理
+    const classMatches = attrStr.match(/\.([^\s}]+)/g);
+    if (classMatches) {
+      classes = classMatches.map(match => match.substring(1));
+    }
+
+    // その他の属性の処理
+    const otherAttrsMatches = attrStr.match(/([^#.\s}]+)=([^\s}]+)/g);
+    if (otherAttrsMatches) {
+      otherAttrsMatches.forEach(match => {
+        const [key, value] = match.split('=');
+        otherAttrs[key] = value.replace(/^["']|["']$/g, '');
+      });
+    }
+  }
+
+  return { content: content.trim(), id, classes, otherAttrs };
+};
+
+/**
+ * HTML属性を文字列として生成
+ */
+const createAttributesString = (
+  id: string,
+  classes: string[],
+  otherAttrs: Record<string, string>
+): string => {
+  const attrs: string[] = [];
+  
+  if (id) {
+    attrs.push(`id="${id}"`);
+  }
+  
+  if (classes.length > 0) {
+    attrs.push(`class="${classes.join(' ')}"`);
+  }
+  
+  Object.entries(otherAttrs).forEach(([key, value]) => {
+    attrs.push(`${key}="${value}"`);
+  });
+  
+  return attrs.length > 0 ? ' ' + attrs.join(' ') : '';
+};
+
+/**
  * marked.jsのカスタマイズ設定
- * 以下の理由でカスタマイズが必要：
- * 1. マーメイド図: デフォルトでは<code class="language-mermaid">として出力されるが、
- *    マーメイドライブラリが要求する<div class="mermaid">形式に変換する必要がある
- * 2. ID指定: {#id}形式の拡張記法をHTML要素のid属性として適切に処理し、
- *    かつプレビューでは表示しない必要がある
  */
 marked.use({
   headerIds: true,
   headerPrefix: '',
   renderer: {
-    // 見出しのカスタマイズ - {#id}形式のID指定に対応
+    // 見出しのカスタマイズ
     heading(text: string, level: number): string {
-      // {#id}形式のIDをキャプチャして要素のid属性として設定
-      // プレビューには表示させないため、contentとidを分離
-      const match = text.match(/^(.+?)\s+\{#([^}]+)\}$/);
-      if (match) {
-        const [, content, id] = match;
-        return `<h${level} id="${id}">${content}</h${level}>`;
-      }
-      return `<h${level}>${text}</h${level}>`;
+      const { content, id, classes, otherAttrs } = processExtendedSyntax(text);
+      const attrsString = createAttributesString(id, classes, otherAttrs);
+      return `<h${level}${attrsString}>${content}</h${level}>`;
     },
-    // コードブロックのカスタマイズ - マーメイド図の特別処理
+    // 段落のカスタマイズ
+    paragraph(text: string): string {
+      const { content, id, classes, otherAttrs } = processExtendedSyntax(text);
+      const attrsString = createAttributesString(id, classes, otherAttrs);
+      return `<p${attrsString}>${content}</p>`;
+    },
+    // 強調（em）のカスタマイズ
+    em(text: string): string {
+      const { content, id, classes, otherAttrs } = processExtendedSyntax(text);
+      const attrsString = createAttributesString(id, classes, otherAttrs);
+      return `<em${attrsString}>${content}</em>`;
+    },
+    // コードブロックのカスタマイズ
     code(code: string, language: string | undefined): string {
-      // マーメイド図は<div class="mermaid">形式で出力
-      // これはマーメイドライブラリの要求する形式に合わせるため
       if (language === 'mermaid') {
         return `<div class="mermaid">${code}</div>`;
       }
-      // その他の言語は通常のコードブロックとして処理
       return `<pre><code class="language-${language}">${code}</code></pre>`;
     }
   }
@@ -40,39 +104,94 @@ marked.use({
 
 /**
  * HTML→Markdown変換のためのTurndownカスタマイズ
- * 以下の理由でカスタマイズが必要：
- * 1. ID属性の保持: HTML→Markdownの変換時にid属性を{#id}形式で保持
- * 2. マーメイド図の復元: <div class="mermaid">を```mermaid形式に正しく戻す
- * 3. 一貫性のある改行とスペース処理
  */
 const turndownService = new TurndownService({
-  headingStyle: 'atx',          // # 形式の見出し
-  hr: '---',                    // 水平線
-  bulletListMarker: '-',        // リストマーカー
-  codeBlockStyle: 'fenced',     // ```形式のコードブロック
-  emDelimiter: '*',             // *による強調
-  strongDelimiter: '**',        // **による太字
-  linkStyle: 'inlined',         // インラインリンク
-  linkReferenceStyle: 'full',   // 完全な参照リンク
+  headingStyle: 'atx',
+  hr: '---',
+  bulletListMarker: '-',
+  codeBlockStyle: 'fenced',
+  emDelimiter: '*',
+  strongDelimiter: '**',
+  linkStyle: 'inlined',
+  linkReferenceStyle: 'full',
   blankReplacement: function(content, node) {
-    return node.isBlock ? '\n\n' : '';  // ブロック要素の前後に適切な空行
+    return node.isBlock ? '\n\n' : '';
   }
 });
 
-// 見出しの変換ルール - HTML要素のid属性を{#id}形式で保持
+// HTMLからマークダウンへの変換時の属性文字列を生成
+const getAttributesString = (node: HTMLElement): string => {
+  const attrs: string[] = [];
+  const id = node.getAttribute('id');
+  const classes = node.getAttribute('class')?.split(' ').filter(Boolean) || [];
+  
+  if (id) {
+    attrs.push(`#${id}`);
+  }
+  
+  // mermaidクラスと言語指定クラスは除外
+  classes.forEach(className => {
+    if (className !== 'mermaid' && !className.startsWith('language-')) {
+      attrs.push(`.${className}`);
+    }
+  });
+
+  // style属性の処理
+  const style = node.getAttribute('style');
+  if (style) {
+    attrs.push(`style=${style}`);
+  }
+
+  // lang属性の処理
+  const lang = node.getAttribute('lang');
+  if (lang) {
+    attrs.push(`lang=${lang}`);
+  }
+
+  // その他の属性の処理（data-*属性など）
+  Array.from(node.attributes).forEach(attr => {
+    if (!['id', 'class', 'style', 'lang'].includes(attr.name) && !attr.name.startsWith('data-')) {
+      attrs.push(`${attr.name}=${attr.value}`);
+    }
+  });
+  
+  return attrs.length > 0 ? ` {${attrs.join(' ')}}` : '';
+};
+
+// 見出しの変換ルール
 turndownService.addRule('heading', {
   filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-  replacement: function (content, node) {
+  replacement: function (content: string, node: HTMLElement) {
     const level = Number(node.nodeName.charAt(1));
-    const id = node.getAttribute('id');
-    const idPart = id ? ` {#${id}}` : '';
-    return `\n${'#'.repeat(level)} ${content}${idPart}\n\n`;
+    const attributes = getAttributesString(node);
+    return `\n${'#'.repeat(level)} ${content}${attributes}\n\n`;
   }
 });
 
-// マーメイド図の変換ルール - <div class="mermaid">を```mermaid形式に変換
+// 段落の変換ルール
+turndownService.addRule('paragraph', {
+  filter: 'p',
+  replacement: function (content: string, node: HTMLElement) {
+    const attributes = getAttributesString(node);
+    if (attributes) {
+      return `\n${content}\n${attributes}\n\n`;
+    }
+    return `\n${content}\n\n`;
+  }
+});
+
+// 強調の変換ルール
+turndownService.addRule('emphasis', {
+  filter: ['em'],
+  replacement: function (content: string, node: HTMLElement) {
+    const attributes = getAttributesString(node);
+    return `*${content}*${attributes}`;
+  }
+});
+
+// マーメイド図の変換ルール
 turndownService.addRule('mermaid', {
-  filter: function (node) {
+  filter: function (node: HTMLElement) {
     return node.nodeName === 'DIV' && node.className === 'mermaid';
   },
   replacement: function (content) {
@@ -80,50 +199,53 @@ turndownService.addRule('mermaid', {
   }
 });
 
-// リストの変換ルール - 一貫性のある形式を維持
+// リストの変換ルール
 turndownService.addRule('list', {
   filter: ['ul', 'ol'],
-  replacement: function (content, node) {
+  replacement: function (content: string, node: HTMLElement) {
     const isOrdered = node.nodeName === 'OL';
     const listItems = content.trim().split('\n');
+    const attributes = getAttributesString(node);
+    
     const processedItems = listItems.map((item, index) => {
       if (isOrdered) {
         return `${index + 1}. ${item.trim()}`;
       }
       return `- ${item.trim()}`;
     }).join('\n');
-    return `\n${processedItems}\n\n`;
+    
+    return `\n${processedItems}${attributes}\n\n`;
   }
 });
 
 /**
  * MarkdownからHTMLへの変換
- * DOMPurifyでXSS対策をしつつ、id属性は許可する
  */
 export const convertMarkdownToHtml = (markdown: string): string => {
   const html = marked(markdown);
   return DOMPurify.sanitize(html, {
-    ADD_ATTR: ['id'] // id属性は必要なので許可
+    ADD_ATTR: ['id', 'class', 'style', 'lang'], // 許可する属性を追加
+    ADD_TAGS: ['em'] // 許可するタグを追加
   });
 };
 
 /**
  * HTMLからMarkdownへの変換
- * DOMPurifyでXSS対策をしつつ、id属性は許可する
  */
 export const convertHtmlToMarkdown = (html: string): string => {
   const safeHtml = DOMPurify.sanitize(html, {
-    ADD_ATTR: ['id'] // id属性は必要なので許可
+    ADD_ATTR: ['id', 'class', 'style', 'lang'], // 許可する属性を追加
+    ADD_TAGS: ['em'] // 許可するタグを追加
   });
   return turndownService.turndown(safeHtml);
 };
 
 /**
  * 生のHTMLを安全に処理
- * id属性の許可が必要なケースに対応
  */
 export const createSafeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, {
-    ADD_ATTR: ['id'] // id属性は必要なので許可
+    ADD_ATTR: ['id', 'class', 'style', 'lang'], // 許可する属性を追加
+    ADD_TAGS: ['em'] // 許可するタグを追加
   });
 };
