@@ -6,7 +6,6 @@ import { initializeMermaid, renderMermaid } from '../../services/mermaid/rendere
 import './styles.css';
 import './Preview.css';
 
-// MarkedのオプションをカスタマイズしてXSSを防止
 marked.setOptions({
   gfm: true,
   breaks: true,
@@ -20,11 +19,52 @@ const Preview: React.FC<PreviewProps> = ({
   customStyles
 }) => {
   const previewRef = useRef<HTMLDivElement>(null);
+  const styleRef = useRef<HTMLStyleElement | null>(null);
   const [processedMarkdown, setProcessedMarkdown] = useState(markdown);
   
   useEffect(() => {
     initializeMermaid();
   }, []);
+
+  // スタイルの適用を管理
+  useEffect(() => {
+    if (!previewRef.current) return;
+
+    // 既存のスタイル要素を削除
+    if (styleRef.current) {
+      styleRef.current.remove();
+      styleRef.current = null;
+    }
+
+    if (customStyles) {
+      // スコープ付きのスタイルを作成
+      const scopedStyles = customStyles.replace(
+        /([^{]*){([^}]*)}/g,
+        (match, selector, rules) => {
+          // セレクタをプレビュー内に限定
+          const scopedSelector = selector
+            .split(',')
+            .map(s => `.preview-scope ${s.trim()}`)
+            .join(',');
+          return `${scopedSelector}{${rules}}`;
+        }
+      );
+
+      // 新しいスタイル要素を作成
+      const styleElement = document.createElement('style');
+      styleElement.textContent = scopedStyles;
+      styleRef.current = styleElement;
+      previewRef.current.appendChild(styleElement);
+    }
+
+    // コンポーネントのクリーンアップ時にスタイルを削除
+    return () => {
+      if (styleRef.current) {
+        styleRef.current.remove();
+        styleRef.current = null;
+      }
+    };
+  }, [customStyles]);
 
   useEffect(() => {
     const processMarkdown = async () => {
@@ -57,7 +97,10 @@ const Preview: React.FC<PreviewProps> = ({
   useEffect(() => {
     if (previewRef.current) {
       const html = marked(processedMarkdown);
-      previewRef.current.innerHTML = html;
+      const contentDiv = previewRef.current.querySelector('.preview-content');
+      if (contentDiv) {
+        contentDiv.innerHTML = html;
+      }
     }
   }, [processedMarkdown]);
 
@@ -69,12 +112,11 @@ const Preview: React.FC<PreviewProps> = ({
           ※ マーメイド図使用時: HTMLエディタでの表示や編集後のマークダウン表記に影響が出る場合があります
         </div>
       </div>
-      <div className="preview-container">
-        {customStyles && <style>{customStyles}</style>}
-        <div
-          ref={previewRef}
-          className="preview-content markdown-body"
-        />
+      <div 
+        className="preview-container preview-scope"
+        ref={previewRef}
+      >
+        <div className="preview-content markdown-body" />
       </div>
     </div>
   );

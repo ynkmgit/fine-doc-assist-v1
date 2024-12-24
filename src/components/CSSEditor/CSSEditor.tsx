@@ -8,8 +8,11 @@ export const CSSEditor: React.FC<CSSEditorProps> = ({ value, onChange }) => {
   const [cssProperties, setCssProperties] = useState<StyleProperty[]>([]);
 
   const handleElementSelect = (element: HTMLElement) => {
+    if (!element.closest('.preview-scope')) {
+      return; // プレビュースコープ外の要素は選択不可
+    }
+    
     setSelectedElement(element);
-    // 選択された要素の現在のスタイルを取得
     const computedStyle = window.getComputedStyle(element);
     const properties: StyleProperty[] = [];
     for (let i = 0; i < computedStyle.length; i++) {
@@ -23,9 +26,8 @@ export const CSSEditor: React.FC<CSSEditorProps> = ({ value, onChange }) => {
   };
 
   const handleStyleChange = (property: string, value: string) => {
-    if (selectedElement) {
+    if (selectedElement && selectedElement.closest('.preview-scope')) {
       selectedElement.style.setProperty(property, value);
-      // CSSの文字列を更新
       const updatedCSS = generateCSSString(selectedElement);
       onChange(updatedCSS);
     }
@@ -37,27 +39,34 @@ export const CSSEditor: React.FC<CSSEditorProps> = ({ value, onChange }) => {
       .map(property => `${property}: ${element.style.getPropertyValue(property)};`)
       .join('\n');
     
-    // スタイルが空の場合は空のCSSを返す
     if (!styles.trim()) {
       return '';
     }
     
+    // プレビュースコープ内のセレクタを生成
     return `${selector} {\n${styles}\n}`;
   };
 
   const generateSelector = (element: HTMLElement): string => {
+    let selector: string;
+    
     if (element.id) {
-      return `#${element.id}`;
+      selector = `#${element.id}`;
+    } else if (element.className) {
+      // preview-scopeクラスは除外
+      const classes = element.className.split(' ')
+        .filter(cls => cls !== 'preview-scope')
+        .join('.');
+      selector = classes ? `.${classes}` : element.tagName.toLowerCase();
+    } else {
+      selector = element.tagName.toLowerCase();
     }
-    if (element.className) {
-      return `.${element.className.split(' ')[0]}`;
+
+    // セレクタのスコープを保証
+    if (!selector.includes('.preview-scope')) {
+      selector = `.preview-scope ${selector}`;
     }
-    let selector = element.tagName.toLowerCase();
-    let parent = element.parentElement;
-    while (parent && parent !== document.body) {
-      selector = `${parent.tagName.toLowerCase()} > ${selector}`;
-      parent = parent.parentElement;
-    }
+    
     return selector;
   };
 
