@@ -4,7 +4,6 @@ import './styles.css';
 
 const PreviewToolbar: React.FC<PreviewToolbarProps> = ({ markdown, customStyles }) => {
   const openInNewTab = () => {
-    // プレビューHTML全体を構築
     const previewHTML = `
       <!DOCTYPE html>
       <html lang="ja">
@@ -14,7 +13,6 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({ markdown, customStyles 
           <title>Preview</title>
           <style>
             ${customStyles || ''}
-            /* 基本スタイル */
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
               margin: 0;
@@ -26,7 +24,6 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({ markdown, customStyles 
               margin: 0 auto;
               padding: 20px;
             }
-            /* マークダウンスタイル */
             .markdown-body {
               color: #24292e;
               font-size: 16px;
@@ -42,7 +39,6 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({ markdown, customStyles 
       </html>
     `;
 
-    // 新しいウィンドウを開いてHTMLを書き込む
     const newWindow = window.open();
     if (newWindow) {
       newWindow.document.write(previewHTML);
@@ -63,10 +59,8 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({ markdown, customStyles 
         </button>
       </div>
       <div className="toolbar-right-group">
-        <div className="notice-text">
-          <div className="notice-text-content">
-            ※ マーメイド図使用時: HTMLエディタでの表示や編集後のマークダウン表記に影響が出る場合があります
-          </div>
+        <div className="info-icon" title="マーメイド図使用時: HTMLエディタでの表示や編集後のマークダウン表記に影響が出る場合があります">
+          <span>&#9432;</span>
         </div>
       </div>
     </div>
