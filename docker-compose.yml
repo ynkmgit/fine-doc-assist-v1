@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     ports:
@@ -14,7 +14,13 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - VITE_WS_PORT=5173
+      - MERMAID_MAX_RENDER_TIME=3000
+      - MERMAID_THEME=default
     command: npm run dev -- --host 0.0.0.0
+    security_opt:
+      - seccomp=unconfined
+    cap_add:
+      - SYS_ADMIN
 
 networks:
   default:

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, ReactElement } from 'react';
 import { marked } from 'marked';
 import PreviewToolbar from './PreviewToolbar';
 import StyleSelectorPanel from './StyleSelectorPanel';
@@ -20,7 +20,7 @@ const Preview: React.FC<PreviewProps> = ({
   customStyles,
   onStyleSelect,
   onApplyToCSSEditor
-}) => {
+}): ReactElement => {
   const previewRef = useRef<HTMLDivElement>(null);
   const styleRef = useRef<HTMLStyleElement | null>(null);
   const [processedMarkdown, setProcessedMarkdown] = useState(markdown);
@@ -35,9 +35,14 @@ const Preview: React.FC<PreviewProps> = ({
 
   // マウスホバーとクリックのイベントハンドラ
   useEffect(() => {
-    const handleMouseOver = (e: MouseEvent) => {
+    const handleMouseOver = (event: Event) => {
+      const e = event as MouseEvent;
       const target = e.target as HTMLElement;
-      if (!target.matches('pre, pre *')) { // コードブロックは除外
+      const mermaidContainer = target.closest('.mermaid-diagram');
+      if (mermaidContainer instanceof HTMLElement) {
+        setHoveredElement(mermaidContainer);
+        e.stopPropagation();
+      } else if (!target.matches('pre, pre *')) {
         setHoveredElement(target);
         e.stopPropagation();
       }
@@ -47,7 +52,8 @@ const Preview: React.FC<PreviewProps> = ({
       setHoveredElement(null);
     };
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = (event: Event) => {
+      const e = event as MouseEvent;
       if (hoveredElement) {
         e.preventDefault();
         setSelectedElement(hoveredElement);
@@ -91,10 +97,10 @@ const Preview: React.FC<PreviewProps> = ({
     if (customStyles) {
       const scopedStyles = customStyles.replace(
         /([^{]*){([^}]*)}/g,
-        (match, selector, rules) => {
+        (match: string, selector: string, rules: string) => {
           const scopedSelector = selector
             .split(',')
-            .map(s => `.preview-scope ${s.trim()}`)
+            .map((s: string) => `.preview-scope ${s.trim()}`)
             .join(',');
           return `${scopedSelector}{${rules}}`;
         }
@@ -118,7 +124,7 @@ const Preview: React.FC<PreviewProps> = ({
     const processMarkdown = async () => {
       let currentMarkdown = markdown;
       const mermaidBlocks = extractAllMermaidCode(markdown);
-      
+
       for (const [index, block] of mermaidBlocks.entries()) {
         try {
           const id = `diagram-${index}-${Date.now()}`;
@@ -129,13 +135,14 @@ const Preview: React.FC<PreviewProps> = ({
           );
         } catch (error) {
           console.error(`Error rendering mermaid diagram ${index + 1}:`, error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
           currentMarkdown = currentMarkdown.replace(
             block.original,
-            `<div class="mermaid-error">Error rendering diagram ${index + 1}: ${error.message}</div>`
+            `<div class="mermaid-error">Error rendering diagram ${index + 1}: ${errorMessage}</div>`
           );
         }
       }
-      
+
       setProcessedMarkdown(currentMarkdown);
     };
 
@@ -156,10 +163,13 @@ const Preview: React.FC<PreviewProps> = ({
   // 選択された要素のスタイル情報を取得
   const getElementStyle = (element: HTMLElement): ElementStyle => {
     const computedStyle = window.getComputedStyle(element);
+    const isMermaid = element.classList.contains('mermaid-diagram');
+
     return {
       tagName: element.tagName.toLowerCase(),
       className: element.className,
       id: element.id,
+      isMermaid,
       styles: {
         color: computedStyle.color,
         backgroundColor: computedStyle.backgroundColor,
@@ -170,26 +180,36 @@ const Preview: React.FC<PreviewProps> = ({
         border: computedStyle.border,
         borderRadius: computedStyle.borderRadius,
         textAlign: computedStyle.textAlign as 'left' | 'center' | 'right' | 'justify',
+        // マーメイド図用のスタイル
+        ...(isMermaid ? {
+          width: computedStyle.width,
+          height: computedStyle.height,
+          display: computedStyle.display,
+          alignItems: computedStyle.alignItems,
+          justifyContent: computedStyle.justifyContent,
+        } : {})
       }
     };
   };
 
   return (
     <div className="preview-wrapper">
-      <PreviewToolbar 
-        markdown={renderedHTML}
-        customStyles={customStyles}
-      />
-      <div 
+      {PreviewToolbar && (
+        <PreviewToolbar
+          markdown={renderedHTML}
+          customStyles={customStyles}
+        />
+      )}
+      <div
         className="preview-container preview-scope"
         ref={previewRef}
       >
         <div className="preview-content markdown-body" />
       </div>
-      {isStylePanelOpen && selectedElement && (
+      {isStylePanelOpen && selectedElement && StyleSelectorPanel && (
         <StyleSelectorPanel
           elementStyle={getElementStyle(selectedElement)}
-          onStyleChange={(style) => {
+          onStyleChange={(style: ElementStyle) => {
             if (onStyleSelect) {
               onStyleSelect(style);
             }

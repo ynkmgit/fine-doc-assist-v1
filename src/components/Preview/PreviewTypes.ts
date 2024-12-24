@@ -1,14 +1,8 @@
-export interface PreviewProps {
-  markdown: string;
-  customStyles?: string;
-  onStyleSelect?: (styles: ElementStyle) => void;
-  onApplyToCSSEditor?: (cssData: CSSData) => void;
-}
-
 export interface ElementStyle {
   tagName: string;
   className: string;
   id: string;
+  isMermaid?: boolean;
   styles: {
     color: string;
     backgroundColor: string;
@@ -19,17 +13,23 @@ export interface ElementStyle {
     border: string;
     borderRadius: string;
     textAlign: 'left' | 'center' | 'right' | 'justify';
-  }
-}
-
-export interface StyleSelectorPanelProps {
-  elementStyle: ElementStyle;
-  onStyleChange: (style: ElementStyle) => void;
-  onClose: () => void;
-  onApplyToCSSEditor: (cssData: CSSData) => void;
+    // マーメイド図用のスタイル
+    width?: string;
+    height?: string;
+    display?: string;
+    alignItems?: string;
+    justifyContent?: string;
+  };
 }
 
 export interface CSSData {
   selector: string;
-  styles: string;
+  styles: Partial<ElementStyle['styles']>;
+}
+
+export interface PreviewProps {
+  markdown: string;
+  customStyles?: string;
+  onStyleSelect?: (style: ElementStyle) => void;
+  onApplyToCSSEditor?: (cssData: CSSData) => void;
 }
