@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: #ffffff;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
 }
 
 .editor-container {
@@ -15,8 +16,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #404040;
 }
 
 .toolbar-group {
@@ -29,22 +30,22 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #505050;
   border-radius: 4px;
-  background-color: #ffffff;
-  color: #333333;
+  background-color: #3d3d3d;
+  color: #d4d4d4;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .toolbar-button:hover:not(:disabled) {
-  background-color: #f0f0f0;
-  border-color: #999;
+  background-color: #4d4d4d;
+  border-color: #606060;
 }
 
 .toolbar-button:active:not(:disabled) {
-  background-color: #e0e0e0;
+  background-color: #5d5d5d;
 }
 
 .toolbar-button:disabled {
@@ -62,29 +63,54 @@
   margin-right: 8px;
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  .editor-wrapper {
-    background-color: #1e1e1e;
-  }
+/* エディタ本体のスタイル */
+.monaco-editor {
+  background-color: #1e1e1e !important;
+}
 
-  .editor-toolbar {
-    background-color: #2d2d2d;
-    border-bottom-color: #404040;
-  }
+/* エディタの入力部分 */
+.monaco-editor .mtk1 {
+  color: #d4d4d4 !important;
+}
 
-  .toolbar-button {
-    background-color: #3d3d3d;
-    border-color: #505050;
-    color: #ffffff;
-  }
+/* 行番号 */
+.monaco-editor .line-numbers {
+  color: #858585 !important;
+}
 
-  .toolbar-button:hover:not(:disabled) {
-    background-color: #4d4d4d;
-    border-color: #606060;
-  }
+/* カーソル */
+.monaco-editor .cursor {
+  background-color: #d4d4d4 !important;
+  border-color: #d4d4d4 !important;
+}
 
-  .toolbar-button:active:not(:disabled) {
-    background-color: #5d5d5d;
-  }
+/* 選択範囲 */
+.monaco-editor .selected-text {
+  background-color: #264f78 !important;
+}
+
+/* スクロールバー */
+.monaco-editor .scrollbar {
+  background-color: #1e1e1e !important;
+}
+
+.monaco-editor .scrollbar .slider {
+  background-color: #424242 !important;
+}
+
+/* マークダウン構文のハイライト */
+.monaco-editor .mtk9 {
+  color: #569cd6 !important; /* 見出し */
+}
+
+.monaco-editor .mtk10 {
+  color: #ce9178 !important; /* 文字列 */
+}
+
+.monaco-editor .mtk11 {
+  color: #b5cea8 !important; /* リンク */
+}
+
+.monaco-editor .mtk12 {
+  color: #608b4e !important; /* コメント */
 }
