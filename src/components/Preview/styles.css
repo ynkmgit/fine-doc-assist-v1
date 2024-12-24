@@ -7,8 +7,26 @@
 
 .preview-toolbar {
   padding: 8px;
-  border-bottom: 1px solid #e1e4e8;
-  background: #f6f8fa;
+  border-bottom: 1px solid #404040;
+  background-color: #2d2d2d;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+}
+
+.notice-text {
+  padding: 4px 8px;
+  background-color: #3d3d3d;
+  border: 1px solid #505050;
+  border-radius: 4px;
+  color: #d4d4d4;
+  font-size: 0.875rem;
+}
+
+.notice-text-content {
+  margin: 0;
 }
 
 .preview-container {
@@ -27,8 +45,6 @@
 .preview-content * {
   position: relative;
   cursor: pointer;
-  /* 表示アニメーション */
-  /* transition: outline 0.2s ease-in-out, outline-offset 0.2s ease-in-out; */
 }
 
 .preview-content *:hover {
@@ -119,7 +135,6 @@
 
 .markdown-body pre+pre {
   margin-top: 1.5em;
-  /* 連続するpreタグ間のマージンを追加 */
 }
 
 .markdown-body pre code {

@@ -107,11 +107,6 @@ const Preview: React.FC<PreviewProps> = ({
   return (
     <div className="preview-wrapper">
       <PreviewToolbar />
-      <div className="notice-text">
-        <div className="notice-text-content">
-          ※ マーメイド図使用時: HTMLエディタでの表示や編集後のマークダウン表記に影響が出る場合があります
-        </div>
-      </div>
       <div 
         className="preview-container preview-scope"
         ref={previewRef}
