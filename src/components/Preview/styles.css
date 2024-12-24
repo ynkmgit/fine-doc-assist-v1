@@ -117,6 +117,11 @@
   border-radius: 3px;
 }
 
+.markdown-body pre+pre {
+  margin-top: 1.5em;
+  /* 連続するpreタグ間のマージンを追加 */
+}
+
 .markdown-body pre code {
   padding: 0;
   margin: 0;
