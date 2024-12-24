@@ -37,7 +37,7 @@
   z-index: 1;
 }
 
-/* 要素位置の目印 */
+/* ホバー要素のclass属性の値が表示 */
 .preview-content *:hover::after {
   content: attr(class);
   position: absolute;
