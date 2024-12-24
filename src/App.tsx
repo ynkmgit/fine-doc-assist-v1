@@ -10,7 +10,7 @@ type EditorTab = 'markdown' | 'css' | 'html';
 const initialMarkdown = '# Welcome to Fine Doc Assist\n\nStart editing to see the preview!';
 
 const App: React.FC = () => {
-  const { markdown, html, updateMarkdown } = useMarkdown(initialMarkdown); // ここで初期値を渡し、HTMLも自動生成
+  const { markdown, html, updateMarkdown, updateHtml } = useMarkdown(initialMarkdown);
   const [css, setCss] = useState<string>('');
   const [activeTab, setActiveTab] = useState<EditorTab>('markdown');
 
@@ -23,8 +23,7 @@ const App: React.FC = () => {
         setCss(value);
         break;
       case 'html':
-        // HTMLタブでの編集は直接プレビューに反映されません
-        // HTMLはマークダウンから生成される出力として表示されます
+        updateHtml(value);
         break;
     }
   };
@@ -75,7 +74,7 @@ const App: React.FC = () => {
         }
         right={
           <Preview
-            markdown={activeTab === 'html' ? html : markdown}
+            markdown={markdown}  // 常にマークダウンを表示
             customStyles={css}
           />
         }

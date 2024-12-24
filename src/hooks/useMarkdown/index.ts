@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { convertMarkdownToHtml } from '../../services/markdown/converter';
+import { convertMarkdownToHtml, convertHtmlToMarkdown } from '../../services/markdown/converter';
 
 export const useMarkdown = (initialMarkdown: string = '') => {
   const [markdown, setMarkdown] = useState(initialMarkdown);
-  const [html, setHtml] = useState(() => convertMarkdownToHtml(initialMarkdown)); // 初期値からHTMLを生成
+  const [html, setHtml] = useState(() => convertMarkdownToHtml(initialMarkdown));
 
   const updateMarkdown = useCallback((newMarkdown: string) => {
     setMarkdown(newMarkdown);
@@ -11,9 +11,16 @@ export const useMarkdown = (initialMarkdown: string = '') => {
     setHtml(newHtml);
   }, []);
 
+  const updateHtml = useCallback((newHtml: string) => {
+    setHtml(newHtml);
+    const newMarkdown = convertHtmlToMarkdown(newHtml);
+    setMarkdown(newMarkdown);
+  }, []);
+
   return {
     markdown,
     html,
-    updateMarkdown
+    updateMarkdown,
+    updateHtml
   };
 };
