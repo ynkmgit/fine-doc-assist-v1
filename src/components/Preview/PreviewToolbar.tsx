@@ -16,18 +16,15 @@ const PreviewToolbar: React.FC<PreviewToolbarProps> = ({ markdown, customStyles 
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
               margin: 0;
-              padding: 20px;
+              padding-left: 20px;
               background: #ffffff;
             }
             .preview-content {
-              max-width: 900px;
               margin: 0 auto;
-              padding: 20px;
             }
             .markdown-body {
               color: #24292e;
               font-size: 16px;
-              line-height: 1.5;
             }
           </style>
         </head>
