@@ -2,31 +2,50 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import TurndownService from 'turndown';
 
+// markedのカスタマイズ設定
+marked.use({
+  headerIds: true,
+  headerPrefix: '',
+  renderer: {
+    heading(text: string, level: number): string {
+      // ID指定のパターンにマッチ（スペースと{#id}の形式）
+      const match = text.match(/^(.+?)\s+\{#([^}]+)\}$/);
+      if (match) {
+        const [, content, id] = match;
+        return `<h${level} id="${id}">${content}</h${level}>`;
+      }
+      return `<h${level}>${text}</h${level}>`;
+    }
+  }
+});
+
 // Turndownのオプション設定
 const turndownService = new TurndownService({
-  headingStyle: 'atx',           // # スタイルの見出し
-  hr: '---',                     // 水平線
-  bulletListMarker: '-',         // リストマーカー
-  codeBlockStyle: 'fenced',      // コードブロック
-  emDelimiter: '*',              // 強調
-  strongDelimiter: '**',         // 太字
-  linkStyle: 'inlined',          // インラインリンク
-  linkReferenceStyle: 'full',    // 参照リンク
+  headingStyle: 'atx',
+  hr: '---',
+  bulletListMarker: '-',
+  codeBlockStyle: 'fenced',
+  emDelimiter: '*',
+  strongDelimiter: '**',
+  linkStyle: 'inlined',
+  linkReferenceStyle: 'full',
   blankReplacement: function(content, node) {
     return node.isBlock ? '\n\n' : '';
   }
 });
 
-// 見出しの変換ルールを強化
+// 見出しの変換ルール - IDを保持
 turndownService.addRule('heading', {
   filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
   replacement: function (content, node) {
     const level = Number(node.nodeName.charAt(1));
-    return `\n${'#'.repeat(level)} ${content}\n\n`;
+    const id = node.getAttribute('id');
+    const idPart = id ? ` {#${id}}` : '';
+    return `\n${'#'.repeat(level)} ${content}${idPart}\n\n`;
   }
 });
 
-// リストの変換ルールを強化
+// リストの変換ルール
 turndownService.addRule('list', {
   filter: ['ul', 'ol'],
   replacement: function (content, node) {
@@ -44,14 +63,20 @@ turndownService.addRule('list', {
 
 export const convertMarkdownToHtml = (markdown: string): string => {
   const html = marked(markdown);
-  return DOMPurify.sanitize(html);
+  return DOMPurify.sanitize(html, {
+    ADD_ATTR: ['id'] // DOMPurifyでidを許可
+  });
 };
 
 export const convertHtmlToMarkdown = (html: string): string => {
-  const safeHtml = DOMPurify.sanitize(html);
+  const safeHtml = DOMPurify.sanitize(html, {
+    ADD_ATTR: ['id'] // DOMPurifyでidを許可
+  });
   return turndownService.turndown(safeHtml);
 };
 
 export const createSafeHtml = (html: string): string => {
-  return DOMPurify.sanitize(html);
+  return DOMPurify.sanitize(html, {
+    ADD_ATTR: ['id'] // DOMPurifyでidを許可
+  });
 };
