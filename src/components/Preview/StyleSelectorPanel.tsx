@@ -9,7 +9,7 @@ const StyleSelectorPanel: React.FC<StyleSelectorPanelProps> = ({
   onApplyToCSSEditor
 }) => {
   const [currentStyle, setCurrentStyle] = useState<ElementStyle>(elementStyle);
-  
+
   useEffect(() => {
     setCurrentStyle(elementStyle);
   }, [elementStyle]);
@@ -27,14 +27,15 @@ const StyleSelectorPanel: React.FC<StyleSelectorPanelProps> = ({
     };
     setCurrentStyle(updatedStyle);
     onStyleChange(updatedStyle);
-    
+
     // リアルタイムプレビューのためのスタイル適用
     if (property in updatedStyle.styles) {
       const selector = generateCSSSelector();
       const styleElement = document.createElement('style');
+      const kebabProperty = property.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
       styleElement.textContent = `
         .preview-content ${selector} {
-          ${property}: ${value} !important;
+          ${kebabProperty}: ${value} !important;
         }
       `;
       document.head.appendChild(styleElement);
@@ -56,7 +57,8 @@ const StyleSelectorPanel: React.FC<StyleSelectorPanelProps> = ({
     const rules: string[] = [];
     Object.entries(currentStyle.styles).forEach(([property, value]) => {
       if (value && value !== 'initial') {  // 初期値でないスタイルのみを出力
-        rules.push(`  ${property}: ${value};`);
+        const kebabProperty = property.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+        rules.push(`  ${kebabProperty}: ${value};`);
       }
     });
     return rules.join('\n');
@@ -177,7 +179,7 @@ const StyleSelectorPanel: React.FC<StyleSelectorPanelProps> = ({
         </div>
 
         <div className="style-actions">
-          <button 
+          <button
             className="action-button apply-button"
             onClick={handleApplyToCSS}
           >
