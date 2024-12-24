@@ -4,3 +4,17 @@
   padding: 1rem;
   overflow: auto;
 }
+
+.notice-text {
+  font-size: 0.75rem;
+  color: #666;
+  padding: 0.5rem;
+  margin: 0;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.notice-text-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
